@@ -1,0 +1,26 @@
+{
+  "name": "Some sort of emoji thing",
+  "version": "1.0",
+  "description": "Converts emoji codes to emojis",
+  "manifest_version": 2,
+  "browser_action": {
+    "default_title": "EmojiCode"
+  },
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": true
+  },
+  "permissions": [
+    "webNavigation",
+    "*://*/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+
+  ],
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
+}
