@@ -1,19 +1,15 @@
 (function(chrome) {
 
-  // TODO
-  // 1. Fix weird thing when pressing delete
-  // 2. On page reload, we should have a messenger that triggers the replacing text since
-  //    messenger stores what you had previously. So we should look at the active element,
-  //    and if it's not empty, we should check for the :emoji-code: string and replace it
-  //    with the corresponding emoji.
-  // 3. Construct entire list of emojis that we can read from with codes mapped to them.
-  // 4. Figure out when we should start tracking and what keys to include. If we have :co, but
+  // TODO/Improvements
+  // 1. Figure out when we should start tracking and what keys to include. If we have :co, but
   //    then we hit a backspace, there should be graceful handling for that.
-  // 5. Add a popup that shows up when the user starts typing where they can select the emoji.
+  // 2. Add a popup that shows up when the user starts typing where they can select the emoji.
   //    I should keep this in mind for any changes that I'm making now to make my life easier
   //    in the future.
-  // 6. Have some sort of packaging so that I don't have to do this all in a single file.
+  // 3. Construct entire list of emojis that we can read from with codes mapped to them.
+  // 4. Have some sort of packaging so that I don't have to do this all in a single file.
   //    Because one-file programs are gross and I don't like looking at them.
+  // 5. Figure out how to put cursor at the end after a selection.
 
   // Key constants
   const COLON_KEY = ':';
@@ -25,77 +21,81 @@
   let shouldInsertLastTypedKey = false;
 
   document.onkeyup = handleKeyEvent;
-  document.onkeydown = setCurrentMessageLength;
-  // I should really think about performance here... we're looping through
-  // a lot of strings, which is probably fast, but might not be...
-  // I think once we have the popup there will be more things to consider. 
+  document.onkeydown = updatePrevStoredValues;
 
   function handleKeyEvent(event) {
     let messageText = document.activeElement.textContent;
 
-    if (event.key !== BACKSPACE_KEY
-      && messageText.length === 0
-      && shouldInsertLastTypedKey === true) {
-      document.execCommand('insertText', true, lastKeyPressed);
-      shouldInsertLastTypedKey = false;
-    }
+    // Sometimes a delete will cause the next key pressed to not be rendered to the
+    // screen. On the keyup, check to see if the key pressed is correctly rendered. 
+    // If not, insert it.
+    checkForUnrenderedChars(event, messageText);
 
     if (emojiCodeStartKeyPressed(event) || messagePasted(event)) {
+      showEmojiSuggestions();
       searchInputForEmojiCode(messageText);
     } else if (event.key === BACKSPACE_KEY) {
-      // If the previous message is the same as the new, clearly a conventional delete
-      // didn't work. Resort to a forced delete by means of selecting all text and inserting
-      // with a new string that matches what should've been deleted.
-      if ((prevMessageText.length === messageText.length) && prevMessageText.length > 0) {
-        handleDeleteText(messageText);
-      }
+      verifyDeletionSuccess(messageText);
     }
   }
 
-  function setCurrentMessageLength(event) {
-    if (event.key === BACKSPACE_KEY) {
-      prevMessageText = document.activeElement.textContent;
-    }
+  function createEmojiSuggestions(emojiSelectionWrapper) {
+    let counter = 5;
 
-    // This is part of a crazy hack for handling deleting when text has been inserted,
-    // which Facebook messenger doesn't seem to handle on its own. This makes a risky
-    // assumption that a meta key (Shift, Backspace, Return, etc.) is only a single 
-    // character long. Something weird happens when all text in the input is selected and
-    // replaced where the first character typed after the replacement isn't shown on the
-    // screen. The `lastPressedKey` is re-inserted after replacement so that it shows up.
-    if (event.key.length === 1) {
-      lastKeyPressed = event.key;
+    for (let alias in emojiList) {
+      if (counter > 0) {
+        const emojiSuggestion = document.createElement('div'),
+              emojiValueWrapper = document.createElement('div'),
+              emojiAliasWrapper = document.createElement('div'),
+              emojiValue = document.createElement('p'),
+              emojiAlias = document.createElement('p');
+
+        emojiSuggestion.setAttribute('class', 'emoji-suggestion');
+
+        emojiValueWrapper.setAttribute('class', 'emoji-value-wrapper');
+        emojiValue.setAttribute('class', 'emoji-value');
+
+        emojiAliasWrapper.setAttribute('class', 'emoji-alias-wrapper');
+        emojiAlias.setAttribute('class', 'emoji-alias');
+
+        emojiValue.appendChild(document.createTextNode(emojiList[alias]));
+        emojiAlias.appendChild(document.createTextNode(`:${alias}:`));
+
+        emojiValueWrapper.appendChild(emojiValue);
+        emojiAliasWrapper.appendChild(emojiAlias);
+
+        emojiSuggestion.appendChild(emojiValueWrapper);
+        emojiSuggestion.appendChild(emojiAliasWrapper);
+
+        emojiSelectionWrapper.appendChild(emojiSuggestion);
+      }
+
+      counter --;
     }
   }
 
-  function handleDeleteText(text) {
-    const textSelection = document.getSelection().toString();
+  function createEmojiSelectionWrapper() {
+    const messageBoxes = document.getElementsByClassName('_7kpk');
+    const messageBoundDiv = messageBoxes[0];
+    const messageBounds = messageBoundDiv.getBoundingClientRect();
+    const bottom = messageBounds.height + 10;
 
-    // Case when one or multiple parts of the message are selected.
-    if (textSelection.length > 0
-        && prevMessageText.length > 1
-        && textSelection.length < prevMessageText.length)
-    {
-      const splitMessage = prevMessageText.split(textSelection);
-      let newMessage = '';
+    // alert('bottom: ' + messageBounds.bottom);
+    // alert('y: ' + messageBounds.y);
+    // alert('height: ' + messageBounds.height);
 
-      for (let i = 0; i < splitMessage.length; i++) {
-        newMessage += splitMessage[i];
-      }
+    const emojiSelectionWrapper = document.createElement('div');
+    emojiSelectionWrapper.setAttribute('class', 'emoji-selection-wrapper');
+    emojiSelectionWrapper.setAttribute('style', `bottom: ${bottom}px; left: ${messageBounds.left}px;`);
 
-      document.execCommand('selectAll');
-      document.execCommand('insertText', true, newMessage);
-    } else if (prevMessageText.length === 1 || textSelection.length === prevMessageText.length) {
-      // Case when entire string is selected or there's a single character
-      document.execCommand('delete');
-      shouldInsertLastTypedKey = true;
-    } else {
-      // Case when we're only deleting a single character
-      let newMessage = prevMessageText.substring(0, prevMessageText.length - 1);
-      document.execCommand('selectAll');
-      document.execCommand('insertText', true, newMessage);
-      // shouldInsertLastTypedKey = false;
-    }
+    createEmojiSuggestions(emojiSelectionWrapper);
+
+    return emojiSelectionWrapper;
+  }
+
+  function showEmojiSuggestions() {
+    const wrapper = createEmojiSelectionWrapper();
+    document.body.appendChild(wrapper);
   }
 
   function searchInputForEmojiCode(inputText) {
@@ -125,6 +125,69 @@
     // This will not work on mac because a meta key is used.
     return (event.ctrlKey && event.key.toUpperCase() === 'V');
   }
+
+  function verifyDeletionSuccess(messageText) {
+    // If the previous message is the same as the new, clearly a conventional delete
+    // didn't work. Resort to a forced delete by means of selecting all text and inserting
+    // with a new string that matches what should've been deleted.
+    if ((prevMessageText.length === messageText.length) && prevMessageText.length > 0) {
+      handleDeleteText(messageText);
+    }
+  }
+
+  function updatePrevStoredValues(event) {
+    if (event.key === BACKSPACE_KEY) {
+      prevMessageText = document.activeElement.textContent;
+    }
+
+    // This is part of a crazy hack for handling deleting when text has been inserted,
+    // which Facebook messenger doesn't seem to handle on its own. This makes a risky
+    // assumption that a meta key (Shift, Backspace, Return, etc.) is longer than a single 
+    // character. Something weird happens when all text in the input is selected and
+    // replaced where the first character typed after the replacement isn't shown on the
+    // screen. The `lastPressedKey` is re-inserted after replacement so that it shows up.
+    if (event.key.length === 1) {
+      lastKeyPressed = event.key;
+    }
+  }
+
+  function checkForUnrenderedChars(event, messageText) {
+    if (event.key !== BACKSPACE_KEY
+        && messageText.length === 0
+        && shouldInsertLastTypedKey === true) {
+      document.execCommand('insertText', true, lastKeyPressed);
+      shouldInsertLastTypedKey = false;
+    }
+  }
+
+  function handleDeleteText(text) {
+    const textSelection = document.getSelection().toString();
+
+    // Case when one or multiple parts of the message are selected.
+    if (textSelection.length > 0
+        && prevMessageText.length > 1
+        && textSelection.length < prevMessageText.length) {
+      const splitMessage = prevMessageText.split(textSelection);
+      let newMessage = '';
+
+      for (let i = 0; i < splitMessage.length; i++) {
+        newMessage += splitMessage[i];
+      }
+
+      document.execCommand('selectAll');
+      document.execCommand('insertText', true, newMessage);
+    } else if (prevMessageText.length === 1 || textSelection.length === prevMessageText.length) {
+      // Case when entire string is selected or there's a single character
+      document.execCommand('delete');
+      shouldInsertLastTypedKey = true;
+    } else {
+      // Case when we're only deleting a single character
+      let newMessage = prevMessageText.substring(0, prevMessageText.length - 1);
+      document.execCommand('selectAll');
+      document.execCommand('insertText', true, newMessage);
+    }
+  }
+
 
    // Emoji constants
   const emojiList = {

@@ -3,17 +3,19 @@
   "version": "1.0",
   "description": "Converts emoji codes to emojis",
   "manifest_version": 2,
-  "browser_action": {
-    "default_title": "EmojiCode"
-  },
   "permissions": [
+    "activeTab",
     "tabs",
     "*://messenger.com/*"
   ],
+  "page_action": {
+    "default_popup": "selection.html"
+  },
   "content_scripts": [
     {
       "matches": ["*://www.messenger.com/*", "*://www.facebook.com/*"],
       "js": ["content.js"],
+      "css": ["emojiSelector.css"],
       "run_at": "document_idle"
     }
   ],

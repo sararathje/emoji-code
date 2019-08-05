@@ -1,0 +1,44 @@
+.emoji-selection-wrapper {
+	position: absolute;
+	display: flex;
+	flex-direction: column;
+	background-color: white;
+	border: 1px solid rgba(0, 0, 0, .40);
+	border-radius: 5px;
+	z-index: 1000;
+	font-size: 15px;
+	box-shadow: 3px 1px 5px grey;
+}
+
+.emoji-suggestion {
+	position: relative;
+	display: flex;
+	padding: 5px;
+	border-bottom: 1px solid rgba(0, 0, 0, .40);
+	height: 25px;
+}
+
+.emoji-suggestion:last-child {
+	border-bottom: none;
+}
+
+.emoji-suggestion:hover {
+  background-color: #0084ff;
+  cursor: pointer;
+}
+
+.emoji-suggestion:hover p {
+	color: white;
+}
+
+.emoji-value-wrapper {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	margin-right: 5px;
+}
+
+.emoji-suggestion p {
+	margin: 0px;
+}
+
