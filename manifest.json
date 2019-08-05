@@ -1,26 +1,21 @@
 {
-  "name": "Some sort of emoji thing",
+  "name": "EmojiCode",
   "version": "1.0",
   "description": "Converts emoji codes to emojis",
   "manifest_version": 2,
   "browser_action": {
     "default_title": "EmojiCode"
   },
-  "background": {
-    "scripts": ["background.js"],
-    "persistent": true
-  },
   "permissions": [
-    "webNavigation",
-    "*://*/*"
+    "tabs",
+    "*://messenger.com/*"
   ],
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
+      "matches": ["*://www.messenger.com/*", "*://www.facebook.com/*"],
       "js": ["content.js"],
       "run_at": "document_idle"
     }
-
   ],
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
 }
