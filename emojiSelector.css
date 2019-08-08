@@ -1,4 +1,8 @@
-.emoji-selection-wrapper {
+#emoji-selection-wrapper {
+	display: none;
+}
+
+#emoji-selection-wrapper.active {
 	position: absolute;
 	display: flex;
 	flex-direction: column;
@@ -8,9 +12,10 @@
 	z-index: 1000;
 	font-size: 15px;
 	box-shadow: 3px 1px 5px grey;
+	outline: none;
 }
 
-.emoji-suggestion {
+.emoji-suggestion, .emoji-suggestion-selected {
 	position: relative;
 	display: flex;
 	padding: 5px;
@@ -18,17 +23,29 @@
 	height: 25px;
 }
 
-.emoji-suggestion:last-child {
+.emoji-suggestion-selected {
+	background-color: #0084ff;
+}
+
+.emoji-suggestion-selected p {
+	color: white;
+}
+
+.emoji-suggestion:last-child, .emoji-suggestion-selected:last-child {
 	border-bottom: none;
 }
 
-.emoji-suggestion:hover {
+.emoji-suggestion:hover, .emoji-suggestion-selected:hover {
   background-color: #0084ff;
   cursor: pointer;
 }
 
-.emoji-suggestion:hover p {
+.emoji-suggestion:hover p, .emoji-suggestion-selected:hover p {
 	color: white;
+}
+
+.emoji-suggestion p, .emoji-suggestion-selected p {
+	margin: 0px;
 }
 
 .emoji-value-wrapper {
@@ -36,9 +53,5 @@
 	flex-direction: column;
 	justify-content: center;
 	margin-right: 5px;
-}
-
-.emoji-suggestion p {
-	margin: 0px;
 }
 
