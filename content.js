@@ -7,9 +7,18 @@
   // If this classname ever changes, we'll have to get the elemetn another way (i.e., by 
   // targetting the label, for example 'Type a message...')
   const messageInput = document.getElementsByClassName('notranslate _5rpu')[0];
-  let currentMessage;
+  let currentMessage = messageInput.textContent;
+  let customOverlay;
 
   /* Functionality */
+  const appendCustomMessageOverlay = () => {
+    customOverlay = document.createElement('div');
+    customOverlay.id = 'custom-message-overlay';
+    customOverlay.textContent = currentMessage;
+
+    document.body.appendChild(customOverlay);
+  };
+
   const interceptSend = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -31,6 +40,7 @@
     }
 
     currentMessage = formattedMessage;
+    customOverlay.textContent = currentMessage;
   };
 
   sendCurrentMessage = () => {
@@ -60,6 +70,7 @@
   };
 
   /* Initial Load Implementations */
+  appendCustomMessageOverlay();
   listenToKeyEventsOnMessageInput();
 
   /* Emoji Constants */

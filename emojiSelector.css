@@ -2,6 +2,56 @@
   display: none !important
 }
 
+/* This is the messenger text input */
+._5rpu {
+  color: transparent !important;
+  /* The cusor looks weird after a replacement has been done, though. I think
+  I need to make my own un-editable input.*/
+  /* caret-color: black !important; */
+}
+
+body {
+  overflow: hidden
+}
+
+/* I want to make the text in the actual input invisible */
+
+#custom-message-overlay {
+  border: 1px solid green;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 833px;
+  height: 35px;
+  border-radius: 18px;
+  /* Just for now:  */
+  /* background-color: rgba(0, 0, 0, 0.05); */
+  /* bottom: 95px; */
+  /* border: 1px solid blue; */
+  bottom: 45px;
+  left: 598px;
+  z-index: 100000;
+  padding: 10px;
+  font-family: Helvetica Neue, Segoe UI, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  box-sizing: border-box;
+  justify-content: left;
+  /* background-color: rgba(0, 0, 0, 0.05); */
+  pointer-events: none;
+}
+
+/* #custom-input-wrapper input, #custom-input-wrapper input:focus {
+  border: none;
+  outline: none;
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+  box-sizing: border-box;
+  padding: 0px;
+  margin: 0px;
+} */
+
 #emoji-selection-wrapper {
 	display: none;
 }
