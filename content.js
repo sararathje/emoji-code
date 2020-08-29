@@ -7,6 +7,7 @@
   // If this classname ever changes, we'll have to get the elemetn another way (i.e., by 
   // targetting the label, for example 'Type a message...')
   const messageInput = document.getElementsByClassName('notranslate _5rpu')[0];
+  // const nativeEmojiSelector = document.getElementsByClassName('uiContextualLayer uiContextualLayerAboveRight')[0];
   let currentMessage = messageInput.textContent;
   let customOverlay;
 
@@ -17,6 +18,13 @@
     customOverlay.textContent = currentMessage;
 
     document.body.appendChild(customOverlay);
+  };
+
+  watchMutationsOnMessageInput = () => {
+    const config = {attributes: true, childList: true, subtree: true};
+    
+    const observer = new MutationObserver(updateCurrentMessage);
+    observer.observe(messageInput, config);
   };
 
   const interceptSend = (e) => {
@@ -41,6 +49,8 @@
 
     currentMessage = formattedMessage;
     customOverlay.textContent = currentMessage;
+
+    console.log('The current message is: ' + currentMessage);
   };
 
   sendCurrentMessage = () => {
@@ -53,6 +63,8 @@
   };
 
   const listenToKeyEventsOnMessageInput = () => {
+    watchMutationsOnMessageInput();
+
     // Listen to keydown because messages are sent on a keydown event
     messageInput.addEventListener('keydown', (e) => {
       if (e.keyCode === KEYS.ENTER && !e.shiftKey) {
